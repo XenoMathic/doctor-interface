@@ -1,0 +1,300 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Interface Pharmago médecin</title>
+  <link rel="stylesheet" href="doctor.css">
+</head>
+<body>
+  <style>
+/* styles.css */
+:root {
+    --primary: #0069d9;
+    --primary-light: #e9f2ff;
+    --background: #f5f8fa;
+    --card-bg: #ffffff;
+    --border: #e1e8ed;
+    --text: #333333;
+    --radius: 8px;
+    --spacing: 1rem;
+    --shadow: rgba(0, 0, 0, 0.05);
+  }
+  
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  
+  body {
+    background: var(--background);
+    color: var(--text);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    max-width: 900px;
+    margin: var(--spacing) auto;
+    padding: var(--spacing);
+  }
+  
+  h1 {
+    text-align: center;
+    margin-bottom: calc(var(--spacing) * 2);
+    font-size: 2.5rem;
+    color: var(--primary);
+    background: var(--primary-light);
+    padding: var(--spacing);
+    border-radius: var(--radius);
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  
+  .input-group,
+  .med-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: calc(var(--spacing) * 1.2);
+    margin-bottom: calc(var(--spacing) * 1.5);
+    box-shadow: 0 1px 4px var(--shadow);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing);
+  }
+  
+  .med-section {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  
+  label {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    display: block;
+  }
+  
+  input,
+  select {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  
+  input:focus,
+  select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(0,105,217,0.15);
+    outline: none;
+  }
+  
+  .buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing);
+    margin-top: var(--spacing);
+  }
+  
+  .buttons button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.2s;
+  }
+  
+  .buttons button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+  }
+  
+  #codeArea {
+    margin-top: calc(var(--spacing) * 2);
+    background: var(--card-bg);
+    padding: var(--spacing);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: monospace;
+    word-break: break-all;
+    box-shadow: 0 1px 4px var(--shadow);
+  }
+  
+
+
+
+  </style>
+  <h1>📄 Ordonnance Pharmago</h1>
+
+  <div class="input-group">
+    <div>
+      <label for="patient">Nom du patient</label>
+      <input type="text" id="patient" placeholder="Jean Dupont">
+    </div>
+    <div>
+      <label for="passport">Numéro de passeport</label>
+      <input type="text" id="passport" placeholder="AB1234567">
+    </div>
+    <div>
+      <label for="ordDate">Date de l'ordonnance</label>
+      <input type="date" id="ordDate">
+    </div>
+    <div>
+      <label for="validity">Validité (jusqu'au)</label>
+      <input type="date" id="validity">
+    </div>
+    <div>
+      <label for="country">Pays de délivrance</label>
+      <select id="country"></select>
+    </div>
+    <div>
+      <label for="numMed">Nombre de médicaments</label>
+      <input type="number" id="numMed" min="1" max="5" value="1">
+    </div>
+  </div>
+
+  <div id="medSections"></div>
+
+  <div class="buttons">
+    <button id="gen">Générer le code</button>
+    <button id="copyBtn">Copier le code</button>
+  </div>
+
+  <div id="codeArea"></div>
+
+  <script>
+
+// script.js
+const MAP = {
+    aspirine: {
+      Israël: "Cartia", Bangladesh: "Ecosprin", "États-Unis": "Bayer",
+      Suisse: "Aspirine", Bahreïn: "Aspirin Protect", Inde: "Disprin",
+      Suède: "Magnecyl", Pologne: "Polocard", Espagne: "Aspirina Bayer",
+      Venezuela: "Equate Aspirin", Canada: "Aspirin", Maroc: "Aspirine Bayer"
+    },
+    paracetamol: {
+      Israël: "Acamol", Bangladesh: "As +", "États-Unis": "Acet",
+      Suisse: "Acétalgine", Bahreïn: "Adol", Inde: "Aeknil",
+      Suède: "Alvedon", Pologne: "APAP", Espagne: "Apiretal",
+      Venezuela: "Atamel", Canada: "Atasol", Maroc: "Doliprane"
+    },
+    salbutamol: {
+      Israël: "Ventolin", Bangladesh: "Ventolin", "États-Unis": "Ventolin",
+      Suisse: "Salamol", Bahreïn: "Ventolin", Inde: "Aerotaz",
+      Suède: "Ventolin", Pologne: "Ventolin", Espagne: "Ventolin",
+      Venezuela: "Ventolin", Canada: "Ventolin", Maroc: "Ventolin"
+    }
+  };
+  
+  const countrySelect = document.getElementById('country');
+  const medContainer = document.getElementById('medSections');
+  const numMedInput = document.getElementById('numMed');
+  const ordDate = document.getElementById('ordDate');
+  const validity = document.getElementById('validity');
+  const codeArea = document.getElementById('codeArea');
+  
+  // Remplir la liste des pays
+  const allCountries = Array.from(new Set(
+    Object.values(MAP).flatMap(obj => Object.keys(obj))
+  )).sort();
+  allCountries.forEach(c => countrySelect.add(new Option(c, c)));
+  
+  // Dates par défaut
+  const today = new Date().toISOString().split('T')[0];
+  ordDate.value = today;
+  let v = new Date(); v.setDate(v.getDate() + 30);
+  validity.value = v.toISOString().split('T')[0];
+  
+  function createMedSections(count) {
+    medContainer.innerHTML = '';
+    for (let i = 1; i <= count; i++) {
+      const section = document.createElement('div');
+      section.className = 'med-section';
+      section.innerHTML = `
+        <div>
+          <label for="med${i}">Médicament ${i}</label>
+          <select id="med${i}"></select>
+        </div>
+        <div>
+          <label for="comName${i}">Nom commercial</label>
+          <select id="comName${i}"></select>
+        </div>
+        <div>
+          <label>Posologie</label>
+          <div style="display:flex;gap:0.5rem;">
+            <input type="number" id="freq${i}" min="1" max="6" value="1" style="flex:1;" placeholder="fois/jour">
+            <input type="number" id="duree${i}" min="1" max="30" value="5" style="flex:1;" placeholder="jours">
+          </div>
+        </div>
+      `;
+      medContainer.appendChild(section);
+  
+      const medSel = document.getElementById(`med${i}`);
+      Object.keys(MAP).forEach(key =>
+        medSel.add(new Option(key.charAt(0).toUpperCase()+key.slice(1), key))
+      );
+  
+      medSel.addEventListener('change', () => updateComList(i));
+      countrySelect.addEventListener('change', () => updateComList(i));
+      updateComList(i);
+    }
+  }
+  
+  function updateComList(i) {
+    const medSel = document.getElementById(`med${i}`);
+    const comSel = document.getElementById(`comName${i}`);
+    comSel.innerHTML = '';
+    const country = countrySelect.value;
+    const name = MAP[medSel.value][country] || 'N/A';
+    comSel.add(new Option(name, name));
+  }
+  
+  numMedInput.addEventListener('change', () => createMedSections(+numMedInput.value));
+  createMedSections(+numMedInput.value);
+  
+  function generateUniqueID(len = 12) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    return Array.from({ length: len }, () =>
+      chars.charAt(Math.floor(Math.random() * chars.length))
+    ).join('');
+  }
+  
+  document.getElementById('gen').addEventListener('click', () => {
+    const ord = {
+      id: generateUniqueID(),
+      date: ordDate.value,
+      patient: document.getElementById('patient').value.trim() || 'Inconnu',
+      passport: document.getElementById('passport').value.trim() || 'N/A',
+      country: countrySelect.value,
+      validUntil: validity.value,
+      prescription: []
+    };
+    const count = +numMedInput.value;
+    for (let i = 1; i <= count; i++) {
+      const medKey = document.getElementById(`med${i}`).value;
+      const comName = document.getElementById(`comName${i}`).value;
+      const freq = document.getElementById(`freq${i}`).value;
+      const duree = document.getElementById(`duree${i}`).value;
+      ord.prescription.push({
+        medicament: medKey.charAt(0).toUpperCase()+medKey.slice(1),
+        nomCommercial: comName,
+        frequence: freq,
+        duree: duree
+      });
+    }
+    const fullCode = btoa(JSON.stringify(ord));
+    codeArea.innerHTML = `<span>${ord.id}</span><span style="color:white; user-select:none">${fullCode}</span>`;
+  });
+  
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    navigator.clipboard.writeText(codeArea.textContent)
+      .then(() => alert('Code copié !'));
+  });
+  
+
+
+
+
+
+
+  </script>
+</body>
+</html>
